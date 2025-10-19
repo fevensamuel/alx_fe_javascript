@@ -8,6 +8,104 @@ let quotes = [
 ];
 
 
+// Function to fetch quotes from the mock server (JSONPlaceholder for demo)
+function fetchQuotesFromServer() {
+  fetch('https://jsonplaceholder.typicode.com/posts') // This is just for demo purposes; replace with your API
+    .then(response => response.json())
+    .then(serverQuotes => {
+      const updatedQuotes = resolveConflicts(serverQuotes);
+      saveQuotesToLocal(updatedQuotes); // Sync with local storage
+      notifyUser('Data has been updated from the server!');
+    })
+    .catch(error => {
+      console.error('Error fetching from server:', error);
+    });
+}
+
+// Function to post a new quote to the mock server (simulated)
+function postQuoteToServer(newQuote) {
+  fetch('https://jsonplaceholder.typicode.com/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: newQuote.text, // Simulate sending quote text as title
+      body: newQuote.category, // Simulate category as body
+      userId: 1 // This is a placeholder for user data
+    })
+  })
+    .then(response => response.json())
+    .then(serverResponse => {
+      console.log('Posted to server:', serverResponse);
+      alert('New quote has been posted to the server!');
+    })
+    .catch(error => {
+      console.error('Error posting to server:', error);
+    });
+}
+
+// Function to handle conflicts between local and server quotes
+function resolveConflicts(serverQuotes) {
+  serverQuotes.forEach(serverQuote => {
+    const existingQuoteIndex = quotes.findIndex(quote => quote.id === serverQuote.id);
+    if (existingQuoteIndex !== -1) {
+      quotes[existingQuoteIndex] = serverQuote; // Replace local data with server data
+    } else {
+      quotes.push(serverQuote); // Add new quote from server
+    }
+  });
+  return quotes; // Return updated quotes
+}
+
+// Function to save quotes to local storage
+function saveQuotesToLocal(updatedQuotes) {
+  localStorage.setItem('quotes', JSON.stringify(updatedQuotes)); // Save to local storage
+  quotes = updatedQuotes; // Update in-memory quotes array
+}
+
+// Function to notify the user about updates
+function notifyUser(message) {
+  const notificationElement = document.createElement("div");
+  notificationElement.classList.add("notification");
+  notificationElement.innerHTML = message;
+  document.body.appendChild(notificationElement);
+
+  setTimeout(() => {
+    notificationElement.remove(); // Remove notification after 5 seconds
+  }, 5000);
+}
+
+// Function to handle adding a new quote (this would be connected to a form in your HTML)
+function addQuote() {
+  const newQuoteText = document.getElementById("newQuoteText").value;
+  const newQuoteCategory = document.getElementById("newQuoteCategory").value;
+  
+  if (newQuoteText && newQuoteCategory) {
+    const newQuote = {
+      id: Date.now(), // Generate unique ID based on timestamp
+      text: newQuoteText,
+      category: newQuoteCategory
+    };
+    quotes.push(newQuote);
+    saveQuotesToLocal(quotes); // Save new quote to local storage
+    postQuoteToServer(newQuote); // Optionally post to server
+    alert('New quote added!');
+  } else {
+    alert('Please enter both quote text and category.');
+  }
+}
+
+// Set interval for periodic data fetching (every 10 minutes)
+setInterval(fetchQuotesFromServer, 600000); // 600000 ms = 10 minutes
+
+// Event listener for the "Add Quote" button (connected to an HTML button)
+document.getElementById("addQuoteBtn").addEventListener("click", addQuote);
+
+// Event listener for periodic fetch on page load
+window.onload = function() {
+  fetchQuotesFromServer(); // Fetch quotes when the page loads
+};
+
+
 // Load quotes from localStorage on page load
 function loadQuotes() {
   const storedQuotes = localStorage.getItem("quotes");
