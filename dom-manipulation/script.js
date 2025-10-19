@@ -2,7 +2,25 @@
 let quotes = [
   { text: "The only limit to our realization of tomorrow is our doubts of today.", category: "Motivational" },
   { text: "Do not go where the path may lead, go instead where there is no path and leave a trail.", category: "Inspirational" }
+  { text: "Believe in yourself and all that you are.", category: "Motivational" },
+  { text: "The best way to predict the future is to create it.", category: "Inspirational" }
+
 ];
+
+
+// Load quotes from localStorage on page load
+function loadQuotes() {
+  const storedQuotes = localStorage.getItem("quotes");
+  if (storedQuotes) {
+    quotes = JSON.parse(storedQuotes);
+  }
+}
+
+// Save quotes to localStorage
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
 
 // Function to create the form to add new quotes
 function createAddQuoteForm() {
@@ -23,6 +41,47 @@ function showRandomQuote() {
   const quoteDisplay = document.getElementById("quoteDisplay");
   const quote = quotes[randomIndex];
   quoteDisplay.innerHTML = `<p>"${quote.text}"</p><p><i>- ${quote.category}</i></p>`;
+}
+
+// Function to filter quotes based on selected category
+function filterQuotes() {
+  const categoryFilter = document.getElementById("categoryFilter").value;
+  const filteredQuotes = categoryFilter === "all" ? quotes : quotes.filter(quote => quote.category === categoryFilter);
+  displayQuotes(filteredQuotes);
+  
+  // Save the selected category to localStorage
+  localStorage.setItem("selectedCategory", categoryFilter);
+}
+
+// Function to display quotes on the page
+function displayQuotes(quotesToDisplay) {
+  const quoteDisplay = document.getElementById("quoteDisplay");
+  quoteDisplay.innerHTML = "";
+  quotesToDisplay.forEach(quote => {
+    quoteDisplay.innerHTML += `<p>"${quote.text}"</p><p><i>- ${quote.category}</i></p>`;
+  });
+}
+
+// Function to populate the category dropdown dynamically
+function populateCategories() {
+  const categoryFilter = document.getElementById("categoryFilter");
+  
+  // Extract unique categories from the quotes array
+  const categories = [...new Set(quotes.map(quote => quote.category))];
+
+  // Add each category to the dropdown
+  categories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+
+  // Add "All Categories" as the first option
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "All Categories";
+  categoryFilter.insertBefore(allOption, categoryFilter.firstChild);
 }
 
 // Function to add a new quote dynamically
