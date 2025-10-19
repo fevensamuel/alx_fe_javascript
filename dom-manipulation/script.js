@@ -55,3 +55,69 @@ document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 // Initialize the form on page load
 createAddQuoteForm();
 
+// Load quotes from localStorage on page load
+function loadQuotes() {
+  const storedQuotes = localStorage.getItem("quotes");
+  if (storedQuotes) {
+    quotes = JSON.parse(storedQuotes);
+  }
+}
+
+// Save quotes to localStorage
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
+// Call loadQuotes() when the script runs
+loadQuotes();
+
+// Updated addQuote function to save quotes to localStorage
+function addQuote() {
+  const newQuoteText = document.getElementById("newQuoteText").value;
+  const newQuoteCategory = document.getElementById("newQuoteCategory").value;
+  
+  if (newQuoteText && newQuoteCategory) {
+    quotes.push({ text: newQuoteText, category: newQuoteCategory });
+    saveQuotes();  // Save updated quotes to localStorage
+    
+    // Clear input fields
+    document.getElementById("newQuoteText").value = "";
+    document.getElementById("newQuoteCategory").value = "";
+    
+    // Display updated quote
+    showRandomQuote();
+  } else {
+    alert("Please enter both quote text and category.");
+  }
+}
+
+// Ensure the random quote button works
+document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+
+// Function to store last viewed quote in sessionStorage
+function storeLastViewedQuote(index) {
+  sessionStorage.setItem("lastViewedQuoteIndex", index);
+}
+
+// When displaying a random quote, store its index in sessionStorage
+function showRandomQuote() {
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+  const quoteDisplay = document.getElementById("quoteDisplay");
+  const quote = quotes[randomIndex];
+  
+  quoteDisplay.innerHTML = `<p>"${quote.text}"</p><p><i>- ${quote.category}</i></p>`;
+  
+  // Store the last viewed quote index in sessionStorage
+  storeLastViewedQuote(randomIndex);
+}
+// Function to import quotes from JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(event) {
+    const importedQuotes = JSON.parse(event.target.result);
+    quotes.push(...importedQuotes);  // Append imported quotes to the current array
+    saveQuotes();  // Save updated quotes to localStorage
+    alert('Quotes imported successfully!');
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
