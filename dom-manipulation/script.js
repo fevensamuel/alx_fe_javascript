@@ -97,6 +97,40 @@ function addQuote() {
 // Set interval for periodic data fetching (every 10 minutes)
 setInterval(fetchQuotesFromServer, 600000); // 600000 ms = 10 minutes
 
+// Function to notify the user
+function notifyUser(message) {
+  const notificationElement = document.createElement("div");
+  notificationElement.classList.add("notification");
+  notificationElement.innerHTML = message;
+  document.body.appendChild(notificationElement);
+
+  setTimeout(() => {
+    notificationElement.remove(); // Remove notification after 5 seconds
+  }, 5000);
+}
+
+// In the syncQuotes function, after syncing is complete:
+async function syncQuotes() {
+  try {
+    // Fetch quotes from the server
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts'); // Replace with your actual server API
+    const serverQuotes = await response.json();
+
+    // Resolve conflicts (update local data with server data)
+    const updatedQuotes = resolveConflicts(serverQuotes);
+
+    // Sync with local storage
+    saveQuotesToLocal(updatedQuotes);
+
+    // Notify user about the sync
+    notifyUser('Quotes synced with server!');
+  } catch (error) {
+    console.error('Error syncing quotes:', error);
+    notifyUser('Error syncing quotes. Please try again later.');
+  }
+}
+
+
 // Event listener for the "Add Quote" button (connected to an HTML button)
 document.getElementById("addQuoteBtn").addEventListener("click", addQuote);
 
