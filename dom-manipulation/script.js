@@ -121,3 +121,133 @@ function importFromJsonFile(event) {
   };
   fileReader.readAsText(event.target.files[0]);
 }
+// Function to export quotes to JSON file
+function exportToJsonFile() {
+  // Create a Blob with the quotes array as JSON
+  const quotesBlob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
+  
+  // Create a temporary URL for the Blob object
+  const url = URL.createObjectURL(quotesBlob);
+  
+  // Create an invisible anchor tag to trigger the download
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";  // Set the default filename for the download
+  a.click();  // Simulate the click to trigger download
+  
+  // Revoke the temporary URL after download
+  URL.revokeObjectURL(url);
+}
+
+// Add the export button to your HTML
+document.getElementById("exportQuotesBtn").addEventListener("click", exportToJsonFile);
+// Function to import quotes from JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();  // Create a new FileReader object
+  
+  fileReader.onload = function(event) {
+    try {
+      // Parse the JSON from the file contents
+      const importedQuotes = JSON.parse(event.target.result);
+      
+      // Ensure the data is an array of quotes
+      if (Array.isArray(importedQuotes)) {
+        quotes.push(...importedQuotes);  // Append imported quotes to the existing array
+        saveQuotes();  // Save the updated quotes to localStorage
+        alert('Quotes imported successfully!');
+        showRandomQuote();  // Optionally display a random quote after import
+      } else {
+        alert('Invalid file format: The file must contain an array of quotes.');
+      }
+    } catch (error) {
+      alert('Error reading or parsing the JSON file: ' + error.message);
+    }
+  };
+  
+  // Read the file as text
+  fileReader.readAsText(event.target.files[0]);
+}
+
+// Attach the function to the file input
+document.getElementById("importFile").addEventListener("change", importFromJsonFile);
+let quotes = [
+  { text: "The only limit to our realization of tomorrow is our doubts of today.", category: "Motivational" },
+  { text: "Do not go where the path may lead, go instead where there is no path and leave a trail.", category: "Inspirational" }
+];
+
+// Load quotes from localStorage on page load
+function loadQuotes() {
+  const storedQuotes = localStorage.getItem("quotes");
+  if (storedQuotes) {
+    quotes = JSON.parse(storedQuotes);
+  }
+}
+
+// Save quotes to localStorage
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
+// Function to show a random quote
+function showRandomQuote() {
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+  const quoteDisplay = document.getElementById("quoteDisplay");
+  const quote = quotes[randomIndex];
+  quoteDisplay.innerHTML = `<p>"${quote.text}"</p><p><i>- ${quote.category}</i></p>`;
+}
+
+// Function to add a new quote dynamically
+function addQuote() {
+  const newQuoteText = document.getElementById("newQuoteText").value;
+  const newQuoteCategory = document.getElementById("newQuoteCategory").value;
+
+  if (newQuoteText && newQuoteCategory) {
+    quotes.push({ text: newQuoteText, category: newQuoteCategory });
+    saveQuotes();  // Save updated quotes to localStorage
+    document.getElementById("newQuoteText").value = "";
+    document.getElementById("newQuoteCategory").value = "";
+    showRandomQuote();
+  } else {
+    alert("Please enter both quote text and category.");
+  }
+}
+
+// Function to export quotes to JSON file
+function exportToJsonFile() {
+  const quotesBlob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(quotesBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Function to import quotes from JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(event) {
+    try {
+      const importedQuotes = JSON.parse(event.target.result);
+      if (Array.isArray(importedQuotes)) {
+        quotes.push(...importedQuotes);
+        saveQuotes();
+        alert('Quotes imported successfully!');
+        showRandomQuote();
+      } else {
+        alert('Invalid file format: The file must contain an array of quotes.');
+      }
+    } catch (error) {
+      alert('Error reading or parsing the JSON file: ' + error.message);
+    }
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+
+// Event listeners for buttons
+document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+document.getElementById("exportQuotesBtn").addEventListener("click", exportToJsonFile);
+document.getElementById("importFile").addEventListener("change", importFromJsonFile);
+
+// Initialize the quotes array
+loadQuotes();
