@@ -100,6 +100,27 @@ setInterval(fetchQuotesFromServer, 600000); // 600000 ms = 10 minutes
 // Event listener for the "Add Quote" button (connected to an HTML button)
 document.getElementById("addQuoteBtn").addEventListener("click", addQuote);
 
+// Function to synchronize local data with the server
+async function syncQuotes() {
+  try {
+    // Fetch quotes from the server
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts'); // Replace with your actual server API
+    const serverQuotes = await response.json();
+
+    // Resolve conflicts (update local data with server data)
+    const updatedQuotes = resolveConflicts(serverQuotes);
+
+    // Sync with local storage
+    saveQuotesToLocal(updatedQuotes);
+
+    // Notify user about the sync
+    notifyUser('Quotes have been synchronized with the server!');
+  } catch (error) {
+    console.error('Error syncing quotes:', error);
+  }
+}
+
+
 // Event listener for periodic fetch on page load
 window.onload = function() {
   fetchQuotesFromServer(); // Fetch quotes when the page loads
